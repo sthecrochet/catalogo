@@ -273,40 +273,7 @@ RESPONSIVO
 GOOGLE SHEETS CSV
 ====================================== */
 
-constcsvurl=
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vTo5mALEWSmujfKKSGKP7qq7GkbyDmeXeHloutFwr_HlSTZ1BKq_ktZPT5FIusKBMq9zvpIOSyqG1e3/pub?output=csv"
-
-/* ======================================
-ELEMENTOS
-====================================== */
-
-const produtosDiv =
-document.getElementById("produtos")
-
-const loading =
-document.getElementById("loading")
-
-const buscar =
-document.getElementById("buscar")
-
-let produtos = []
-
-/* ======================================
-CARREGAR PRODUTOS
-====================================== */
-
-async function carregarProdutos(){
-
-    try{
-
-        const resposta =
-        await fetch(constcsvurl)
-
-        const texto =
-        await resposta.text()
-
-        const linhas =
-        texto.split("\n").slice(1)
+constcsvurl=https://docs.google.com/spreadsheets/d/e/2PACX-1vQpVTXySqUc8ehuUOpmYS3LzebR26NniQaQ2fIdISeySwGLng70hZodx4NJ7vuV74bIxIKHi3Qnk0Hk/pub?output=csv
 
         produtos =
         linhas.map(linha => {
