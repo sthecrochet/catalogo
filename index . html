@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Catálogo de Produtos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:#0f0f0f;
+    color:white;
+    min-height:100vh;
+}
+
+/* =========================
+HEADER
+========================= */
+
+header{
+    width:100%;
+    padding:30px 20px;
+    background:#151515;
+    border-bottom:1px solid #2b2b2b;
+    position:sticky;
+    top:0;
+    z-index:100;
+    backdrop-filter:blur(10px);
+}
+
+.topo{
+    max-width:1400px;
+    margin:auto;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:700;
+    background:linear-gradient(90deg,#00ff88,#00bfff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.pesquisa{
+    flex:1;
+    max-width:400px;
+}
+
+.pesquisa input{
+    width:100%;
+    padding:14px 18px;
+    border:none;
+    outline:none;
+    border-radius:14px;
+    background:#1d1d1d;
+    color:white;
+    font-size:15px;
+    transition:0.3s;
+}
+
+.pesquisa input:focus{
+    box-shadow:0 0 0 2px #00ff88;
+}
+
+/* =========================
+CATALOGO
+========================= */
+
+main{
+    padding:40px 20px;
+}
+
+.grid{
+    max-width:1400px;
+    margin:auto;
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+
+/* =========================
+CARD
+========================= */
+
+.card{
+    background:#171717;
+    border-radius:24px;
+    overflow:hidden;
+    transition:0.35s;
+    border:1px solid #262626;
+    position:relative;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+    border-color:#00ff88;
+    box-shadow:
+    0 15px 40px rgba(0,255,136,0.12);
+}
+
+.imagem{
+    width:100%;
+    height:260px;
+    overflow:hidden;
+    background:#111;
+}
+
+.imagem img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:0.4s;
+}
+
+.card:hover img{
+    transform:scale(1.05);
+}
+
+.info{
+    padding:20px;
+}
+
+.nome{
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:10px;
+}
+
+.descricao{
+    color:#bdbdbd;
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:20px;
+
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+
+.preco{
+    font-size:30px;
+    font-weight:700;
+    color:#00ff88;
+    margin-bottom:18px;
+}
+
+.botao{
+    width:100%;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    background:linear-gradient(90deg,#00ff88,#00bfff);
+    color:black;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.3s;
+    text-decoration:none;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.botao:hover{
+    opacity:0.85;
+}
+
+/* =========================
+STATUS
+========================= */
+
+.loading,
+.vazio{
+    text-align:center;
+    font-size:22px;
+    padding:60px 20px;
+    color:#d0d0d0;
+}
+
+/* =========================
+FOOTER
+========================= */
+
+footer{
+    text-align:center;
+    padding:40px 20px;
+    color:#8a8a8a;
+    font-size:14px;
+}
+
+/* =========================
+RESPONSIVO
+========================= */
+
+@media(max-width:700px){
+
+    .logo{
+        font-size:26px;
+    }
+
+    .topo{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .pesquisa{
+        max-width:100%;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+<header>
+
+    <div class="topo">
+
+        <div class="logo">
+            Meu Catálogo
+        </div>
+
+        <div class="pesquisa">
+            <input
+                type="text"
+                id="buscar"
+                placeholder="Pesquisar produtos..."
+            >
+        </div>
+
+    </div>
+
+</header>
+
+<main>
+
+    <div id="loading" class="loading">
+        Carregando produtos...
+    </div>
+
+    <div id="produtos" class="grid"></div>
+
+</main>
+
+<footer>
+    Catálogo automático conectado ao Google Sheets
+</footer>
+
+<script>
+
+/* ======================================
+GOOGLE SHEETS CSV
+====================================== */
+
+constcsvurl=
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vTo5mALEWSmujfKKSGKP7qq7GkbyDmeXeHloutFwr_HlSTZ1BKq_ktZPT5FIusKBMq9zvpIOSyqG1e3/pub?output=csv"
+
+/* ======================================
+ELEMENTOS
+====================================== */
+
+const produtosDiv =
+document.getElementById("produtos")
+
+const loading =
+document.getElementById("loading")
+
+const buscar =
+document.getElementById("buscar")
+
+let produtos = []
+
+/* ======================================
+CARREGAR PRODUTOS
+====================================== */
+
+async function carregarProdutos(){
+
+    try{
+
+        const resposta =
+        await fetch(constcsvurl)
+
+        const texto =
+        await resposta.text()
+
+        const linhas =
+        texto.split("\n").slice(1)
+
+        produtos =
+        linhas.map(linha => {
+
+            const colunas =
+            linha.split(",")
+
+            return{
+
+                nome:
+                limpar(colunas[0]),
+
+                preco:
+                limpar(colunas[1]),
+
+                imagem:
+                limpar(colunas[2]),
+
+                descricao:
+                limpar(colunas[3]),
+
+                link:
+                limpar(colunas[4])
+
+            }
+
+        })
+
+        mostrarProdutos(produtos)
+
+        loading.style.display="none"
+
+    }catch(erro){
+
+        loading.innerHTML=
+        "Erro ao carregar produtos."
+
+        console.log(erro)
+
+    }
+
+}
+
+/* ======================================
+LIMPAR TEXTO
+====================================== */
+
+function limpar(valor){
+
+    if(!valor) return ""
+
+    return valor
+    .replace(/"/g,"")
+    .trim()
+
+}
+
+/* ======================================
+MOSTRAR PRODUTOS
+====================================== */
+
+function mostrarProdutos(lista){
+
+    produtosDiv.innerHTML=""
+
+    if(lista.length===0){
+
+        produtosDiv.innerHTML=
+        `<div class="vazio">
+            Nenhum produto encontrado.
+        </div>`
+
+        return
+
+    }
+
+    lista.forEach(produto => {
+
+        produtosDiv.innerHTML += `
+
+        <div class="card">
+
+            <div class="imagem">
+
+                <img
+                    src="${produto.imagem}"
+                    alt="${produto.nome}"
+                >
+
+            </div>
+
+            <div class="info">
+
+                <div class="nome">
+                    ${produto.nome}
+                </div>
+
+                <div class="descricao">
+                    ${produto.descricao}
+                </div>
+
+                <div class="preco">
+                    R$ ${produto.preco}
+                </div>
+
+                <a
+                    class="botao"
+                    href="${produto.link}"
+                    target="_blank"
+                >
+                    Comprar Agora
+                </a>
+
+            </div>
+
+        </div>
+
+        `
+
+    })
+
+}
+
+/* ======================================
+PESQUISA
+====================================== */
+
+buscar.addEventListener("input",()=>{
+
+    const valor =
+    buscar.value.toLowerCase()
+
+    const filtrados =
+    produtos.filter(produto =>
+
+        produto.nome
+        .toLowerCase()
+        .includes(valor)
+
+    )
+
+    mostrarProdutos(filtrados)
+
+})
+
+/* ======================================
+INICIAR
+====================================== */
+
+carregarProdutos()
+
+</script>
+
+</body>
+</html>
